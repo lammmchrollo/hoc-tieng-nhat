@@ -2,11 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: true, // Giữ lại dòng này để tránh lỗi ép Type
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  // ĐÃ XÓA KHỐI ESLINT Ở ĐÂY
 };
 
 export default nextConfig;

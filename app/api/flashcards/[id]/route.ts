@@ -1,13 +1,16 @@
-import { NextResponse } from 'next/server';
-import connectDB from '@/lib/mongodb';
-import Flashcard from '@/models/Flashcard';
-
-// Xóa 1 thẻ lẻ dựa vào ID
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+// Thêm hàm này vào dưới hàm DELETE trong app/api/flashcards/[id]/route.ts
+export async function PUT(
+  req: Request, 
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     await connectDB();
-    await Flashcard.findByIdAndDelete(params.id);
-    return NextResponse.json({ success: true });
+    const { id } = await params;
+    const updateData = await req.json();
+    
+    // Cập nhật thẻ và trả về data mới nhất
+    const updatedCard = await Flashcard.findByIdAndUpdate(id, updateData, { new: true });
+    return NextResponse.json({ success: true, data: updatedCard });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }

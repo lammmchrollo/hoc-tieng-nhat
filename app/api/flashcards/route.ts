@@ -2,19 +2,25 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Flashcard from '@/models/Flashcard';
 
-// Next.js phiên bản mới yêu cầu params phải là một Promise
-export async function DELETE(
-  req: Request, 
-  { params }: { params: Promise<{ id: string }> }
-) {
+// PHẢI CÓ HÀM GET NÀY ĐỂ LẤY DANH SÁCH THẺ
+export async function GET(req: Request) {
   try {
     await connectDB();
+    const { searchParams } = new URL(req.url);
+    const deckName = searchParams.get('deckName');
     
-    // Phải giải nén (await) params ra trước khi lấy id
-    const { id } = await params;
+    let filter = {};
+    if (deckName) {
+      // Xử lý trường hợp "Thẻ chưa phân loại" hoặc lọc theo tên bộ
+      if (deckName === 'Thẻ chưa phân loại') {
+        filter = { deckName: { $in: [null, undefined, 'Thẻ chưa phân loại', ''] } };
+      } else {
+        filter = { deckName: deckName };
+      }
+    }
     
-    await Flashcard.findByIdAndDelete(id);
-    return NextResponse.json({ success: true });
+    const cards = await Flashcard.find(filter).sort({ createdAt: -1 });
+    return NextResponse.json({ success: true, data: cards });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
